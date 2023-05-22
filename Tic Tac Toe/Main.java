@@ -1,11 +1,12 @@
 import java.util.Scanner;
 
 class TicTacToe {
-    private static final char p1Char = 'X';
-    private static final char p2Char = 'Y';
-    char[][] board = new char[3][3];
-    private int gameState;
+    private static final char P1_CHAR = 'X';
+    private static final char P2_CHAR = 'Y';
+    private char[][] board = new char[3][3];
     private boolean isP1Turn;
+    private GameState gameState;
+    private int moves;
 
     private enum Position {
         P1(0, 0),
@@ -35,15 +36,17 @@ class TicTacToe {
         }
     }
 
-    TicTacToe(String p1) {
-        gameState = 3;
-        isP1Turn = true;
-        setInitialBoard();
+    enum GameState {
+        P1_WIN,
+        P2_WIN,
+        RUNNING,
+        DRAW
     }
 
-    TicTacToe(String p1, String p2) {
-        gameState = 3;
+    TicTacToe() {
         isP1Turn = true;
+        gameState = GameState.RUNNING;
+        moves = 0;
         setInitialBoard();
     }
 
@@ -56,12 +59,26 @@ class TicTacToe {
     }
 
     public void move(String pos) {
-        if (isP1Turn) {
-            board[Position.valueOf(pos).getPositionX()][Position.valueOf(pos).getPositionY()] = p1Char;
-            updateGameState();
-        } else {
-            board[Position.valueOf(pos).x][Position.valueOf(pos).y] = p2Char;
-            updateGameState();
+        try {
+            int row = Position.valueOf(pos).getPositionX();
+            int col = Position.valueOf(pos).getPositionY();
+
+            if (board[row][col] != '-') {
+                System.out.println("Invalid Position");
+                return;
+            }
+
+            if (isP1Turn) {
+                board[row][col] = P1_CHAR;
+                moves++;
+                updateGameState();
+            } else {
+                board[row][col] = P2_CHAR;
+                moves++;
+                updateGameState();
+            }
+        } catch (IllegalArgumentException e) {
+            System.out.println("Invalid position");
         }
     }
 
@@ -79,7 +96,7 @@ class TicTacToe {
                 board[0][2] == 'X' && board[1][2] == 'X' && board[2][2] == 'X' ||
                 board[0][0] == 'X' && board[1][1] == 'X' && board[2][2] == 'X' ||
                 board[0][2] == 'X' && board[1][1] == 'X' && board[2][0] == 'X') {
-            gameState = 1;
+            gameState = GameState.P1_WIN;
         } else if (board[0][0] == 'Y' && board[0][1] == 'Y' && board[0][2] == 'Y' ||
                 board[1][0] == 'Y' && board[1][1] == 'Y' && board[1][2] == 'Y' ||
                 board[2][0] == 'Y' && board[2][1] == 'Y' && board[2][2] == 'Y' ||
@@ -88,7 +105,9 @@ class TicTacToe {
                 board[0][2] == 'Y' && board[1][2] == 'Y' && board[2][2] == 'Y' ||
                 board[0][0] == 'Y' && board[1][1] == 'Y' && board[2][2] == 'Y' ||
                 board[0][2] == 'Y' && board[1][1] == 'Y' && board[2][0] == 'Y') {
-            gameState = 2;
+            gameState = GameState.P2_WIN;
+        } else if (moves == 9) {
+            gameState = GameState.DRAW;
         }
     }
 
@@ -107,7 +126,7 @@ class TicTacToe {
         return isP1Turn;
     }
 
-    public int getGameState() {
+    public GameState getGameState() {
         return gameState;
     }
 }
@@ -117,23 +136,30 @@ public class Main {
         System.out.println("Need to work on the draw condition: -_-!");
         System.out.println("Use positions: P1 P2 P3 P4 P5 P6 P7 P8 P9");
         Scanner sc = new Scanner(System.in);
-        TicTacToe ticTacToe = new TicTacToe("A", "B");
 
-        while (ticTacToe.getGameState() == 3) {
+        TicTacToe ticTacToe = new TicTacToe();
+
+        while (ticTacToe.getGameState() == TicTacToe.GameState.RUNNING) {
             ticTacToe.displayBoard();
+
             if (ticTacToe.isP1Turn())
                 System.out.println("P1 enter position: ");
             else
                 System.out.println("P2 enter position: ");
+
             String pos = sc.next();
             ticTacToe.move(pos);
         }
+
         ticTacToe.displayBoard();
-        if (ticTacToe.getGameState() == 1)
+
+        if (ticTacToe.getGameState() == TicTacToe.GameState.P1_WIN)
             System.out.println("P1 Wins!");
-        else if (ticTacToe.getGameState() == 2)
+        else if (ticTacToe.getGameState() == TicTacToe.GameState.P2_WIN)
             System.out.println("P2 Wins!");
         else
             System.out.println("Draw!");
+
+        sc.close();
     }
 }
