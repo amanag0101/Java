@@ -14,7 +14,10 @@ class MyThread extends Thread {
 
 public class ThreadClass {
     public static void main(String[] args) {
-        new MyThread().start();
-        new MyThread().start();
+        Thread t1 = new MyThread();
+        Thread t2 = new MyThread();
+
+        t1.start();
+        t2.start();
     }
 }
